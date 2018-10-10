@@ -119,7 +119,18 @@ int main() {
           double throttle_value = j[1]["throttle"];
 
           // Consider delay here!!!
+          double control_delay = 0.1; // 100ms delay
+          double Lf = 2.67;
 
+          //steer_value *= -1;  // Change the direction
+          //v = v * 1609 / 3600; // Change MPH to m/s
+          px += v * cos(psi) * control_delay;
+          py += v * sin(psi) * control_delay;
+          cte += v * sin(epsi) * control_delay;
+          epsi += v * (-1) * steer_value * control_delay / Lf;
+          psi += v * (-1) * steer_value * control_delay / Lf;
+          // Assume acc is 0 during 0.1m range
+          //v += acc * control_delay;
 
           Eigen::VectorXd state(6);
           state << 0, 0, 0, v, cte, epsi;
@@ -140,7 +151,6 @@ int main() {
           json msgJson;
           // NOTE: Remember to divide by deg2rad(25) before you send the steering value back.
           // Otherwise the values will be in between [-deg2rad(25), deg2rad(25] instead of [-1, 1].
-          double Lf = 2.67;
           steer_value = vars[0] / (deg2rad(25) * Lf);
           throttle_value = vars[1];
 

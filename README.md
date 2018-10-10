@@ -71,6 +71,19 @@ Large value of dt updates the control less frequently, then it makes harder to c
 size_t N = 10;   // Number of time steps
 double dt = 0.1; // 100 [msec]
 ```
+### Control Delay of 100[ms] in model
+
+The Model Predictive Control handles a 100 millisecond latency in the model by adding following lines.
+
+```
+px += v * cos(psi) * control_delay;
+py += v * sin(psi) * control_delay;
+cte += v * sin(epsi) * control_delay;
+epsi += v * (-1) * steer_value * control_delay / Lf;
+psi += v * (-1) * steer_value * control_delay / Lf;
+// Assume acc is close to 0 during 0.1m range
+//v += acc * control_delay;
+```
 ### Tuning the Cost of MPC
 
 The cost is saved in the first element of 'fg' vector, fg[0].
@@ -79,11 +92,11 @@ The first step of tuning is the cost factor of track error, 'cte'. If the this f
 Following values have been chosen as the final cost function.
 
 ```
-double costCte = 500; // Reduced from 2000 to reduce the oscillation
+double costCte = 200; // Reduced from 2000 to reduce the oscillation
 double costEpsi = 1000;
 double costV = 1;     // Set to 1 to avoid frequent brake
-double costDeltaStart = 200; // 200;
-double costAStart = 10; // 10;
+double costDeltaStart = 200;
+double costAStart = 10;
 
 fg[0] = 0;
 for (int i = 0; i < N; ++i) {
