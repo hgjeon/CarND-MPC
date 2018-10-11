@@ -93,9 +93,9 @@ Following values have been chosen as the final cost function.
 
 ```
 double costCte = 200; // Reduced from 2000 to reduce the oscillation
-double costEpsi = 1000;
+double costEpsi = 100;
 double costV = 1;     // Set to 1 to avoid frequent brake
-double costDeltaStart = 200;
+double costDeltaStart = 1000;
 double costAStart = 10;
 
 fg[0] = 0;
@@ -105,11 +105,11 @@ for (int i = 0; i < N; ++i) {
   fg[0] += costV * CppAD::pow(vars[v_start + i] - ref_v, 2);
 }
 for (int i = 0; i < N - 1; ++i) {
+  fg[0] += 5 * CppAD::pow(vars[delta_start + i], 2);
   fg[0] += 5 * CppAD::pow(vars[a_start + i], 2);
-  fg[0] += (5 * (vars[v_start + i] / 10 + 1)) * CppAD::pow(vars[delta_start + i], 2);
 }
 for (int i = 0; i < N - 2; ++i) {
-  fg[0] += (costDeltaStart * (vars[v_start + i] / 15 + 1)) * CppAD::pow(vars[delta_start + i + 1] - vars[delta_start + i], 2);
+  fg[0] += (costDeltaStart * (vars[v_start + i] * 10 / costDeltaStart + 1)) * CppAD::pow(vars[delta_start + i + 1] - vars[delta_start + i], 2);
   fg[0] += costAStart * CppAD::pow(vars[a_start + i + 1] - vars[a_start + i], 2);
 }
 ```

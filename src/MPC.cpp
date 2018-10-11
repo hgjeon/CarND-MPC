@@ -7,7 +7,7 @@ using CppAD::AD;
 
 // TODO: Set the timestep length and duration
 size_t N = 10;
-double dt = 0.1;
+double dt = 0.10;
 
 // This value assumes the model presented in the classroom is used.
 //
@@ -49,6 +49,30 @@ class FG_eval {
     std::cout << "operator start!" << std::endl;
 
 #if 1 // Delay of 0.1seconds
+  double costCte = 200; //200; //100; // 2000;
+  double costEpsi = 100; //1000; //100;
+  double costV = 1;
+  double costDeltaStart = 1000; //2000; // 200;
+  double costAStart = 10; // 10;
+
+  fg[0] = 0;
+  for (int i = 0; i < N; ++i) {
+    fg[0] += costCte * CppAD::pow(vars[cte_start + i] - ref_cte, 2);
+    fg[0] += costEpsi * CppAD::pow(vars[epsi_start + i] - ref_epsi, 2);
+    fg[0] += costV * CppAD::pow(vars[v_start + i] - ref_v, 2);
+  }
+  for (int i = 0; i < N - 1; ++i) {
+    fg[0] += 5 * CppAD::pow(vars[delta_start + i], 2);
+    fg[0] += 5 * CppAD::pow(vars[a_start + i], 2);
+    //fg[0] += (5 * (vars[v_start + i] / 10 + 1)) * CppAD::pow(vars[delta_start + i], 2);
+  }
+  for (int i = 0; i < N - 2; ++i) {
+    //fg[0] += 200 * CppAD::pow(vars[delta_start + i + 1] - vars[delta_start + i], 2);
+    //fg[0] += 10 * CppAD::pow(vars[a_start + i + 1] - vars[a_start + i], 2);
+    fg[0] += (costDeltaStart * (vars[v_start + i] * 10 / costDeltaStart + 1)) * CppAD::pow(vars[delta_start + i + 1] - vars[delta_start + i], 2);
+    fg[0] += costAStart * CppAD::pow(vars[a_start + i + 1] - vars[a_start + i], 2);
+  }
+#else
   double costCte = 200; //100; // 2000;
   double costEpsi = 1000; //100;
   double costV = 1;
@@ -72,30 +96,6 @@ class FG_eval {
     fg[0] += (costDeltaStart * (vars[v_start + i] / 30 + 1)) * CppAD::pow(vars[delta_start + i + 1] - vars[delta_start + i], 2);
     fg[0] += costAStart * CppAD::pow(vars[a_start + i + 1] - vars[a_start + i], 2);
   }
-#else
-    double costCte = 500; // 2000;
-    double costEpsi = 1000;
-    double costV = 1;
-    double costDeltaStart = 200; // 200;
-    double costAStart = 10; // 10;
-
-    fg[0] = 0;
-    for (int i = 0; i < N; ++i) {
-      fg[0] += costCte * CppAD::pow(vars[cte_start + i] - ref_cte, 2);
-      fg[0] += costEpsi * CppAD::pow(vars[epsi_start + i] - ref_epsi, 2);
-      fg[0] += costV * CppAD::pow(vars[v_start + i] - ref_v, 2);
-    }
-    for (int i = 0; i < N - 1; ++i) {
-      //fg[0] += 5 * CppAD::pow(vars[delta_start + i], 2);
-      fg[0] += 5 * CppAD::pow(vars[a_start + i], 2);
-      fg[0] += (5 * (vars[v_start + i] / 10 + 1)) * CppAD::pow(vars[delta_start + i], 2);
-    }
-    for (int i = 0; i < N - 2; ++i) {
-      //fg[0] += 200 * CppAD::pow(vars[delta_start + i + 1] - vars[delta_start + i], 2);
-      //fg[0] += 10 * CppAD::pow(vars[a_start + i + 1] - vars[a_start + i], 2);
-      fg[0] += (costDeltaStart * (vars[v_start + i] / 15 + 1)) * CppAD::pow(vars[delta_start + i + 1] - vars[delta_start + i], 2);
-      fg[0] += costAStart * CppAD::pow(vars[a_start + i + 1] - vars[a_start + i], 2);
-    }
 #endif
     fg[1 + x_start] = vars[x_start];
     fg[1 + y_start] = vars[y_start];

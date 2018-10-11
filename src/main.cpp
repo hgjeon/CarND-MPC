@@ -17,6 +17,8 @@ constexpr double pi() { return M_PI; }
 double deg2rad(double x) { return x * pi() / 180; }
 double rad2deg(double x) { return x * 180 / pi(); }
 
+int Initialized = 0;
+
 // Checks if the SocketIO event has JSON data.
 // If there is data the JSON object in string format will be returned,
 // else the empty string "" will be returned.
@@ -122,19 +124,39 @@ int main() {
           double control_delay = 0.1; // 100ms delay
           double Lf = 2.67;
 
+#if 1
+          Eigen::VectorXd state(6);
+
+        if (!Initialized) {
           //steer_value *= -1;  // Change the direction
           //v = v * 1609 / 3600; // Change MPH to m/s
-          px += v * cos(psi) * control_delay;
-          py += v * sin(psi) * control_delay;
-          cte += v * sin(epsi) * control_delay;
-          epsi += v * (-1) * steer_value * control_delay / Lf;
-          psi += v * (-1) * steer_value * control_delay / Lf;
+          //px = px + v * cos(psi) * control_delay;
+          //py = py + v * sin(psi) * control_delay;
+          cte = cte + v * sin(epsi) * control_delay;
+          epsi = epsi + v * (-1) * (steer_value) * control_delay / Lf;
+          psi = psi + v * (-1) * (steer_value) * control_delay / Lf;
           // Assume acc is 0 during 0.1m range
           //v += acc * control_delay;
 
-          Eigen::VectorXd state(6);
           state << 0, 0, 0, v, cte, epsi;
+        } else {
+          //steer_value *= -1;  // Change the direction
+          //v = v * 1609 / 3600; // Change MPH to m/s
+          //psi = 0;
+          px = px + v * cos(psi) * control_delay;
+          py = py + v * sin(psi) * control_delay;
+          cte = cte + v * sin(epsi) * control_delay;
+          epsi = epsi + v * (-1) * (steer_value) * control_delay / Lf;
+          psi = psi + v * (-1) * (steer_value) * control_delay / Lf;
+          // Assume acc is 0 during 0.1m range
+          //v += acc * control_delay;
 
+          state << px, py, psi, v, cte, epsi;
+        }
+#endif
+
+          std::cout << "[steer]: " << steer_value << " [state]: " << px << " " << py << " " << psi << " " << v << " " << cte << " " << epsi << std::endl;
+          //state << 0, 0, 0, v, cte, epsi;
           /*
           * TODO: Calculate steering angle and throttle using MPC.
           *
